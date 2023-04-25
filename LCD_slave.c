@@ -1,7 +1,7 @@
 #include <msp430.h> 
 
-//__attribute__ ((section(".data")))
-const unsigned int bitmap[] = {
+//
+static const unsigned int __attribute__ ((section(".text"))) bitmap[] = {
                                0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xee17, 0xd34c, 0xca67, 0xca47, 0xcac9, 0xdcb1, 0xff7d, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
                                0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xff9e, 0xf71c, 0xff9e, 0xffff, 0xffff, 0xffff, 0xf6ba, 0xcac9, 0xca27, 0xca27, 0xca27, 0xca27, 0xca27, 0xe4d2, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
                                0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xee58, 0xd3ad, 0xcac9, 0xd36c, 0xedf7, 0xffdf, 0xffff, 0xe533, 0xca27, 0xca27, 0xca27, 0xca27, 0xca27, 0xca27, 0xd32b, 0xff7d, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
@@ -57,6 +57,13 @@ int Rx_Data;
 unsigned int pos;
 unsigned int data_len;
 volatile int writeCmdFlag = 0;
+
+// RTC
+volatile int query_rtc_flag = 0;
+char rtc_packet[] = {0x0A, 0x0A, 0x0A};
+int mode_b;
+int r = 0;
+int rtc_count = 0;
 
 // TFT constants
 #define SWRESET 0x01 // software reset
@@ -161,6 +168,35 @@ void initTimerB0compare(){
 
     TB0CCR0 = 1045;             // Set CCR0 value (Period = 1045 for 1ms)
     TB0CCTL0 &= ~CCIFG;         // Clear CCR0 flag
+}
+
+void initRTC_master(){
+     UCB0CTLW0 |= UCSWRST;          // SW RESET ON
+
+     UCB0CTLW0 |= UCSSEL_3;         // SMCLK
+     UCB0BRW = 40;                  // Divide 16 Mhz SMCLK by 40 --> 400kHz I2C clock
+
+     UCB0CTLW0 |= UCMODE_3;         // Put into I2C mode
+     UCB0CTLW0 |= UCMST;            // Set as MASTER
+     UCB0CTLW0 |= UCTR;             // Put into Tx mode
+     UCB0I2CSA = 0x0068;            // DS3231 RTC Slave address = 0x68
+
+     UCB0CTLW1 |= 0xC0;             // Set UCCLTO = 11 (~34ms clock low timeout)
+
+     UCB0CTLW1 |= UCASTP_2;         // Enable automatic stop bit
+     UCB0TBCNT = sizeof(packet);    // Transfer byte count
+
+     // Setup ports
+     P1SEL1 &= ~BIT3;            // P1.3 SCL
+     P1SEL0 |= BIT3;
+
+     P1SEL1 &= ~BIT2;            // P1.2 SDA
+     P1SEL0 |= BIT2;
+
+     UCB0CTLW0 &= ~UCSWRST;      // SW RESET OFF
+
+     UCB0IE |= UCTXIE0 | UCRXIE0 | UCCLTOIE | UCBCNTIE | UCNACKIE;          // enable I2C B0 Tx, Rx, timeout IRQ
+
 }
 
 void init(){
@@ -472,14 +508,37 @@ void fillScreen(){
      }
 }
 
+void queryRTC(){
+
+    mode_b = 1;
+    UCB0CTLW0 |= UCTR;
+    UCB0TBCNT = 1;
+    UCB0CTLW0 |= UCTXSTT;           // Generate START condition
+     while((UCB0IFG & UCSTPIFG)==0); // wait for STOP
+    UCB0IFG &= ~UCSTPIFG;  // clear the stop flag
+
+    mode_b = 2;
+    UCB0CTLW0 &= ~UCTR;
+    UCB0TBCNT = sizeof(rtc_packet);
+    UCB0CTLW0 |= UCTXSTT;           // Generate START condition
+    while((UCB0IFG & UCSTPIFG)==0); // wait for STOP
+    UCB0IFG &= ~UCSTPIFG;  // clear the stop flag
+
+}
+
 int main(void)
 {
+    // System inits
     setClock16Mhz();
     init();
 
+    // init & query RTC
+    initRTC_master();
+    queryRTC();
+
+    // init TFT
     initTFT();
     setOrientation();
-
     clearDisplay();
 
 //    delay_ms(100);
@@ -511,11 +570,20 @@ int main(void)
 //    fillScreen();
 //    fillRect(40, 40, 68, 68, 0xCA27);
 
+
+
     while(1){
 
 //        SPI_send(test, sizeof(test));
 //        delay_ms(5);
         P6OUT ^= BIT0;
+
+        // RTC
+        if(rtc_count == 2){
+            queryRTC(); // query RTC
+            rtc_count = 0;
+        }
+        rtc_count++;
 
         // look for button press
         if(top_button == 1){
@@ -585,7 +653,9 @@ int main(void)
 //    }
 //}
 
-// Top Button Interrupt (P2.3)
+/*
+ * Top Button Interrupt (P2.3)
+ */
 #pragma vector = PORT2_VECTOR
 __interrupt void ISR_PORT2_S2(void){
 
@@ -594,7 +664,9 @@ __interrupt void ISR_PORT2_S2(void){
 //    P2IFG &= ~BIT3;                 // clear flag
 }
 
-// TIMER (delay_ms)
+/*
+ * TIMER (delay_ms)
+ */
 #pragma vector=TIMER0_B0_VECTOR
 __interrupt void ISR_TB0_CCR0(void){
     ms_count++;
@@ -604,4 +676,33 @@ __interrupt void ISR_TB0_CCR0(void){
     }
 
     TB0CCTL0 &= ~CCIFG;
+}
+
+
+/*
+ * RTC I2C Interrupt
+ */
+#pragma vector=EUSCI_B0_VECTOR
+__interrupt void EUSCI_B0_TX_ISR(void){
+    switch(UCB0IV){
+        case 0x16:      // ID 16: RXIFG0
+            if(mode_b == 2){
+                if (r == (sizeof(rtc_packet)-1)){
+                    rtc_packet[r] = UCB0RXBUF;
+                    r = 0;
+                } else {
+                    rtc_packet[r] = UCB0RXBUF;
+                    r++;
+                }
+            }
+            break;
+        case 0x18:      // ID 18: TXIFG0
+            if(mode_b == 1){
+                UCB0TXBUF = 0x00;
+            }
+            break;
+        default:
+            break;
+    }
+
 }
