@@ -65,6 +65,10 @@ int mode_b;
 int r = 0;
 int rtc_count = 0;
 
+// I2C
+int b1_i = 0;
+char bluetooth_pkt[] = {0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0xAE};
+
 // Saved Data
 // { sec, min, hours, dow , data, mont/cent , year, bay_num }
 char data[31][7] = {{ 0,0,0,0,0,0,0 }};
@@ -186,7 +190,7 @@ void initRTC_master(){
      UCB0CTLW0 |= UCSWRST;          // SW RESET ON
 
      UCB0CTLW0 |= UCSSEL_3;         // SMCLK
-     UCB0BRW = 160;                  // Divide 16 Mhz SMCLK by 160 --> 100kHz I2C clock
+     UCB0BRW = 40;                  // Divide 16 Mhz SMCLK by 160 --> 100kHz I2C clock
 
      UCB0CTLW0 |= UCMODE_3;         // Put into I2C mode
      UCB0CTLW0 |= UCMST;            // Set as MASTER
@@ -363,6 +367,7 @@ void initI2C_master(){
      UCB1CTLW0 |= UCMODE_3;         // Put into I2C mode
      UCB1CTLW0 |= UCMST;            // Set as MASTER
      UCB1CTLW0 |= UCTR;             // Put into Tx mode
+     UCB1CTLW0 |= UCMSB;
 
      UCB1CTLW1 |= 0xC0;             // Set UCCLTO = 11 (~34ms clock low timeout)
 
@@ -582,6 +587,55 @@ void fillDataPacket(){
     data_i++;
 }
 
+void fillBluetoothPacket(char pack[]){
+    int i;
+    for(i=0;i<sizeof(rtc_packet);i++){
+        if(i != 7){
+            bluetooth_pkt[i] = pack[i];
+        }
+    }
+}
+
+void updateBluetooth(){
+    int i;
+    for(i=0;i<data_i;i++){
+        fillBluetoothPacket(data[i]);
+
+        UCB1I2CSA = 0x0058;                 // Set slave address
+        mode_b = 4;
+        b1_i = 0;
+        UCB1CTLW0 |= UCTR;
+        UCB1TBCNT = sizeof(bluetooth_pkt);
+        UCB1CTLW0 |= UCTXSTT;           // Generate START condition
+        while((UCB1IFG & UCSTPIFG)==0); // wait for STOP
+        UCB0IFG &= ~UCSTPIFG;  // clear the stop flag
+
+        delay_ms(50);
+    }
+}
+
+void display_week(int r[7]){
+    clearDisplay();
+
+    int margin = 3;
+    int width = 19;
+    int k;
+    int x = (XSIZE/2)-(width/2);
+    int y = 4;
+    int col;
+
+    for(k=0;k<7;k++){
+        if(r[k] == 0){
+            col = RED;
+        } else {
+            col = GREEN;
+        }
+        fillRect(x, y, x+20, y+20, col);
+        y = y + width + margin;
+    }
+
+}
+
 int main(void)
 {
     // System inits
@@ -629,7 +683,7 @@ int main(void)
 //    fillScreen();
 //    fillRect(40, 40, 68, 68, 0xCA27);
 
-
+    int m[] = {1,1,0,0,1,1,1}; // test week data
 
     while(1){
 
@@ -665,26 +719,21 @@ int main(void)
 
             // set refill mode
             if(refill_mode == 0){
-                fillRect(0, 0, XSIZE/2, YSIZE/2, col);
+//                fillRect(0, 0, XSIZE/2, YSIZE/2, col);
+
+                display_week(m);
                 refill_mode = 1;
                 screensaver = 0;
-                bluetooth_cmd = 0;
+                bluetooth_pkt[7] = 0;
             } else {
                 clearDisplay();
                 refill_mode = 0;
                 screensaver = 1;
-                bluetooth_cmd = 0xAE;
+                bluetooth_pkt[7] = 0xAE;
             }
 
             // begin I2C transmission
-            UCB1I2CSA = 0x0058;                 // Set slave address
-            mode_b = 3;
-            UCB1CTLW0 |= UCTR;
-            UCB1TBCNT = 1;
-            UCB1CTLW0 |= UCTXSTT;           // Generate START condition
-            while((UCB1IFG & UCSTPIFG)==0); // wait for STOP
-            UCB0IFG &= ~UCSTPIFG;  // clear the stop flag
-
+            updateBluetooth();
 
 //            fillScreen();
             top_button = 0;
@@ -794,7 +843,17 @@ __interrupt void EUSCI_B1_TX_ISR(void){                     // Fill TX buffer wi
 //            lm92_packet[j] = UCB1RXBUF;
             break;
         case 0x18:      // ID 18: TXIFG0
-            UCB1TXBUF = bluetooth_cmd; // test value
+            if(mode_b == 3){
+                UCB1TXBUF = bluetooth_cmd; // test value
+            } else if(mode_b == 4){
+                if (b1_i == (sizeof(bluetooth_pkt)-1)){
+                    UCB1TXBUF = bluetooth_pkt[b1_i];
+                    b1_i = 0;
+                } else {
+                    UCB1TXBUF = bluetooth_pkt[b1_i];
+                    b1_i++;
+                }
+            }
             break;
         case 0x04: // NACK
             break;
