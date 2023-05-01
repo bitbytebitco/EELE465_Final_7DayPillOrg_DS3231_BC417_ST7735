@@ -60,10 +60,22 @@ volatile int writeCmdFlag = 0;
 
 // RTC
 volatile int query_rtc_flag = 0;
-char rtc_packet[] = {0x0A, 0x0A, 0x0A};
+char rtc_packet[] = {0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A};
 int mode_b;
 int r = 0;
 int rtc_count = 0;
+
+// Saved Data
+// { sec, min, hours, dow , data, mont/cent , year, bay_num }
+char data[31][7] = {{ 0,0,0,0,0,0,0 }};
+int data_i = 0;
+int data_j = 0;
+
+int bluetooth_cmd = 0;
+
+// screensaver mode
+int screensaver = 0;
+int refill_mode = 0;
 
 // TFT constants
 #define SWRESET 0x01 // software reset
@@ -174,7 +186,7 @@ void initRTC_master(){
      UCB0CTLW0 |= UCSWRST;          // SW RESET ON
 
      UCB0CTLW0 |= UCSSEL_3;         // SMCLK
-     UCB0BRW = 40;                  // Divide 16 Mhz SMCLK by 40 --> 400kHz I2C clock
+     UCB0BRW = 160;                  // Divide 16 Mhz SMCLK by 160 --> 100kHz I2C clock
 
      UCB0CTLW0 |= UCMODE_3;         // Put into I2C mode
      UCB0CTLW0 |= UCMST;            // Set as MASTER
@@ -216,11 +228,16 @@ void init(){
         UCA0CTLW0 &= ~UCMODE0;
         UCA0CTLW0 |= UCSTEM;            // STE pin used for 4-wire SPI
 
-        // Setup Ports
-    //    P4DIR &= ~BIT1;
-    //    P4REN |= BIT1;                  // enable P4.1 pull up/down resistors
-    //    P4OUT |= BIT1;                  // set P4.1 resistor as pull up
-    //    P4IES |= BIT1;                  // H-to-L sensitivity
+        // Reed Switch
+        P3DIR &= ~BIT1;
+        P3REN |= BIT1;  // enable P1.1 pull up/down resistors
+        P3OUT &= ~BIT1;  // set P1.1 resistor as pull DOWN
+        P3IES &= ~BIT1;  // set interrupt mode for rising edge
+
+        P3IE |= (BIT1);   // Local Interrupt enable for P3.1
+        P3IFG &= ~(BIT1);     // clear P3.1 IRQ Flag
+
+
 
         P2DIR &= ~BIT3;                 // enable P2.3 as INPUT
         P2REN |= BIT3;                  // enable resistors
@@ -335,6 +352,36 @@ void SPI_send(char *bytes, int len){
     pos = 0; // set packet index to 0
     data_len = len; // update length
     UCA0TXBUF = packet[pos]; // send first byte
+}
+
+void initI2C_master(){
+     UCB1CTLW0 |= UCSWRST;          // SW RESET ON
+
+     UCB1CTLW0 |= UCSSEL_3;         // SMCLK
+     UCB1BRW = 40;                  // Divide 16 Mhz SMCLK by 40 --> 400kHz I2C clock
+
+     UCB1CTLW0 |= UCMODE_3;         // Put into I2C mode
+     UCB1CTLW0 |= UCMST;            // Set as MASTER
+     UCB1CTLW0 |= UCTR;             // Put into Tx mode
+
+     UCB1CTLW1 |= 0xC0;             // Set UCCLTO = 11 (~34ms clock low timeout)
+
+     UCB1CTLW1 |= UCASTP_2;         // Enable automatic stop bit
+     UCB1TBCNT = sizeof(packet);    // Transfer byte count
+
+     // Setup ports
+     P4SEL1 &= ~BIT7;            // P4.7 SCL
+     P4SEL0 |= BIT7;
+
+
+     P4SEL1 &= ~BIT6;            // P4.6 SDA
+     P4SEL0 |= BIT6;
+
+     PM5CTL0 &= ~LOCKLPM5;       // Turn on I/O
+     UCB1CTLW0 &= ~UCSWRST;      // SW RESET OFF
+
+     UCB1IE |= UCTXIE0 | UCRXIE0 | UCCLTOIE | UCBCNTIE | UCNACKIE;                  // Enable I2C TX interrupt
+
 }
 
 void initTFT(){
@@ -508,8 +555,10 @@ void fillScreen(){
      }
 }
 
+
 void queryRTC(){
 
+    UCB0I2CSA = 0x0068;            // DS3231 RTC Slave address = 0x68
     mode_b = 1;
     UCB0CTLW0 |= UCTR;
     UCB0TBCNT = 1;
@@ -523,7 +572,14 @@ void queryRTC(){
     UCB0CTLW0 |= UCTXSTT;           // Generate START condition
     while((UCB0IFG & UCSTPIFG)==0); // wait for STOP
     UCB0IFG &= ~UCSTPIFG;  // clear the stop flag
+}
 
+void fillDataPacket(){
+    int j;
+    for(j = 0;j<sizeof(rtc_packet);j++){
+        data[data_i][j] = rtc_packet[j];
+    }
+    data_i++;
 }
 
 int main(void)
@@ -531,6 +587,8 @@ int main(void)
     // System inits
     setClock16Mhz();
     init();
+
+    initI2C_master();                   // Intialize master for I2C transmission
 
     // init & query RTC
     initRTC_master();
@@ -550,6 +608,7 @@ int main(void)
     int v = 10;
     int t = 0;
     int back_col;
+
 
     /*
     // beginning of box
@@ -579,11 +638,18 @@ int main(void)
         P6OUT ^= BIT0;
 
         // RTC
-        if(rtc_count == 2){
+//        if(rtc_count == 2){
+        if(query_rtc_flag == 1){
             queryRTC(); // query RTC
+
+            if(refill_mode == 0){
+                fillDataPacket();
+            }
+
+            query_rtc_flag = 0;
             rtc_count = 0;
         }
-        rtc_count++;
+//        rtc_count++;
 
         // look for button press
         if(top_button == 1){
@@ -594,8 +660,31 @@ int main(void)
                 case 4: col = YELLOW; break;
                 case 5: col = RED; ind = 0; break;
             }
+            col = BLUE;
             ind++;
-            fillRect(0, 0, XSIZE/2, YSIZE/2, col);
+
+            // set refill mode
+            if(refill_mode == 0){
+                fillRect(0, 0, XSIZE/2, YSIZE/2, col);
+                refill_mode = 1;
+                screensaver = 0;
+                bluetooth_cmd = 0;
+            } else {
+                clearDisplay();
+                refill_mode = 0;
+                screensaver = 1;
+                bluetooth_cmd = 0xAE;
+            }
+
+            // begin I2C transmission
+            UCB1I2CSA = 0x0058;                 // Set slave address
+            mode_b = 3;
+            UCB1CTLW0 |= UCTR;
+            UCB1TBCNT = 1;
+            UCB1CTLW0 |= UCTXSTT;           // Generate START condition
+            while((UCB1IFG & UCSTPIFG)==0); // wait for STOP
+            UCB0IFG &= ~UCSTPIFG;  // clear the stop flag
+
 
 //            fillScreen();
             top_button = 0;
@@ -604,10 +693,12 @@ int main(void)
             P2IFG &= ~BIT3;                 // clear flag
         }
 
-        // random flower bitmaps
-        clearDisplay();
-        drawBitmap(rand() % 100,rand() % 100);
-        delay_ms(1000);
+        if(screensaver == 1){
+            // random flower bitmaps
+            clearDisplay();
+            drawBitmap(rand() % 100,rand() % 100);
+            delay_ms(1000);
+        }
 
         // random fade
 //        t++;
@@ -625,33 +716,6 @@ int main(void)
 }
 // -----------------------------------/
 // ISRs ------------------------------/
-
-//#pragma vector = PORT4_VECTOR
-//__interrupt void ISR_PORT4_S1(void){
-//    //pos = 0;
-//    //UCA0TXBUF = packet[pos];
-//    UCA0TXBUF = 0xEE;
-//    P4IFG &= ~BIT1;                 // clear flag
-//}
-
-
-
-//#pragma vector = EUSCI_A0_VECTOR
-//__interrupt void ISR_EUSCI_A0(void){
-////    if(pos == data_len-1){
-////            if(writeCmdFlag == 1){
-////                setDC();
-////                writeCmdFlag = 0;
-////            }
-////        }
-//
-//    pos++;
-//    if(pos < data_len){
-//        UCA0TXBUF = packet[pos];
-//    } else {
-//        UCA0IFG &= ~UCTXIFG;            // clear flag
-//    }
-//}
 
 /*
  * Top Button Interrupt (P2.3)
@@ -680,7 +744,7 @@ __interrupt void ISR_TB0_CCR0(void){
 
 
 /*
- * RTC I2C Interrupt
+ * I2C (RTC slave)
  */
 #pragma vector=EUSCI_B0_VECTOR
 __interrupt void EUSCI_B0_TX_ISR(void){
@@ -697,12 +761,49 @@ __interrupt void EUSCI_B0_TX_ISR(void){
             }
             break;
         case 0x18:      // ID 18: TXIFG0
+            // rtc pointer set
             if(mode_b == 1){
                 UCB0TXBUF = 0x00;
             }
+
             break;
         default:
             break;
     }
 
+}
+
+
+/*
+ * Reed Switch
+ */
+#pragma vector = PORT3_VECTOR
+__interrupt void ISR_PORT3_S1(void){
+    query_rtc_flag = 1;
+    P3IFG &= ~BIT1;                 // clear flag
+}
+
+
+/*
+ * I2C 2310 (slave)
+ */
+#pragma vector=EUSCI_B1_VECTOR
+__interrupt void EUSCI_B1_TX_ISR(void){                     // Fill TX buffer with packet values
+    switch(UCB1IV){
+        case 0x16:      // ID 16: RXIFG0
+//            lm92_packet[j] = UCB1RXBUF;
+            break;
+        case 0x18:      // ID 18: TXIFG0
+            UCB1TXBUF = bluetooth_cmd; // test value
+            break;
+        case 0x04: // NACK
+            break;
+        case 0x1A: // byte count zero interrupt
+            break;
+        case 0x1C: // clock low timeout
+            UCB0CTLW0 |= UCTXNACK;
+            break;
+        default:
+            break;
+    }
 }
