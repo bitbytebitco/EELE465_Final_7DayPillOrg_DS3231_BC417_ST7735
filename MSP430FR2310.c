@@ -1,7 +1,7 @@
 #include <msp430.h> 
 
 // I2C vars
-volatile int j = 0;
+volatile int r = 0;
 volatile char pkt[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 char packet[] = "Zachary";
@@ -68,15 +68,13 @@ int main(void)
     int i = 0;
     int j = 0;
     while(1) {
-//        UCA0TXBUF = 'A';
-
         if(action_select == 1){
 
             // begin Bluetooth packet transmission
             UCA0IE |= UCTXCPTIE;
             UCA0IFG &= ~UCTXCPTIFG;
             pos = 0;
-            UCA0TXBUF = packet[pos++];
+            UCA0TXBUF = pkt[pos++];
 
             // delay
             for(i = 0;i<100;i++){
@@ -97,7 +95,7 @@ __interrupt void ISR_EUSCI_A0(void)
         UCA0IE &= ~UCTXCPTIE; // turn off TX complete IRQ
     }
     else {
-        UCA0TXBUF = packet[pos];
+        UCA0TXBUF = pkt[pos];
         pos++;
     }
     UCA0IFG &= ~UCTXCPTIFG; // clear TX complete flag
@@ -111,10 +109,9 @@ __interrupt void EUSCI_B0_TX_ISR(void){
 
     switch(UCB0IV){
         case 0x06: // start condition
-
             break;
         case 0x08:  // stop condition
-            j = 0;
+            r = 0;
             if(pkt[0] == 0xAE){
                 action_select = 1;       // Display temperature or perform action for #/*
             } else {
@@ -122,8 +119,8 @@ __interrupt void EUSCI_B0_TX_ISR(void){
             }
             break;
         case 0x16:                           // Receiving
-            pkt[j] = UCB0RXBUF;      // Retrieve byte from buffer
-            j++;
+            pkt[r] = UCB0RXBUF;      // Retrieve byte from buffer
+            r++;
 
             break;
         case 0x18:
