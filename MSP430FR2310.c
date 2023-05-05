@@ -2,9 +2,9 @@
 
 // I2C vars
 volatile int r = 0;
-volatile char pkt[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-
-char packet[] = "Zachary";
+char data[31][8] = {{ 0,0,0,0,0,0,0 }};
+int send_i = 0;
+int rec_i = 0;
 unsigned int pos = 0;
 
 volatile int action_select = 0;
@@ -74,7 +74,7 @@ int main(void)
             UCA0IE |= UCTXCPTIE;
             UCA0IFG &= ~UCTXCPTIFG;
             pos = 0;
-            UCA0TXBUF = pkt[pos++];
+            UCA0TXBUF = data[send_i][pos++];
 
             // delay
             for(i = 0;i<100;i++){
@@ -91,11 +91,17 @@ int main(void)
 #pragma vector = EUSCI_A0_VECTOR
 __interrupt void ISR_EUSCI_A0(void)
 {
-    if(pos==sizeof(packet)-1){
+    if(pos==sizeof(data[send_i])){
+        //UCA0TXBUF = data[send_i][pos];
         UCA0IE &= ~UCTXCPTIE; // turn off TX complete IRQ
+        send_i++;
+        if(send_i == 31){
+            send_i = 0;
+            action_select = 0;
+        }
     }
     else {
-        UCA0TXBUF = pkt[pos];
+        UCA0TXBUF = data[send_i][pos];
         pos++;
     }
     UCA0IFG &= ~UCTXCPTIFG; // clear TX complete flag
@@ -112,14 +118,18 @@ __interrupt void EUSCI_B0_TX_ISR(void){
             break;
         case 0x08:  // stop condition
             r = 0;
-            if(pkt[0] == 0xAE){
-                action_select = 1;       // Display temperature or perform action for #/*
+            if(data[rec_i][0] == 0xAE){
+                action_select = 1;
             } else {
                 action_select = 0;
             }
+            rec_i++;
+            if(rec_i == 31){
+                rec_i = 0;
+            }
             break;
         case 0x16:                           // Receiving
-            pkt[r] = UCB0RXBUF;      // Retrieve byte from buffer
+            data[rec_i][r] = UCB0RXBUF;      // Retrieve byte from buffer
             r++;
 
             break;
