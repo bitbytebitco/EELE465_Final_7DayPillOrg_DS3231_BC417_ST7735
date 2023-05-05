@@ -32,6 +32,106 @@ static const unsigned int __attribute__ ((section(".text"))) bitmap[] = {
                                0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xf6ba, 0xd3ad, 0xcac9, 0xd38c, 0xe595, 0xff9e, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff
                              };
 
+static const unsigned FONT_CHARS[96][5] =
+{
+  { 0x00, 0x00, 0x00, 0x00, 0x00 }, // (space)
+  { 0x00, 0x00, 0x5F, 0x00, 0x00 }, // !
+  { 0x00, 0x07, 0x00, 0x07, 0x00 }, // "
+  { 0x14, 0x7F, 0x14, 0x7F, 0x14 }, // #
+  { 0x24, 0x2A, 0x7F, 0x2A, 0x12 }, // $
+  { 0x23, 0x13, 0x08, 0x64, 0x62 }, // %
+  { 0x36, 0x49, 0x55, 0x22, 0x50 }, // &
+  { 0x00, 0x05, 0x03, 0x00, 0x00 }, // '
+  { 0x00, 0x1C, 0x22, 0x41, 0x00 }, // (
+  { 0x00, 0x41, 0x22, 0x1C, 0x00 }, // )
+  { 0x08, 0x2A, 0x1C, 0x2A, 0x08 }, // *
+  { 0x08, 0x08, 0x3E, 0x08, 0x08 }, // +
+  { 0x00, 0x50, 0x30, 0x00, 0x00 }, // ,
+  { 0x08, 0x08, 0x08, 0x08, 0x08 }, // -
+  { 0x00, 0x60, 0x60, 0x00, 0x00 }, // .
+  { 0x20, 0x10, 0x08, 0x04, 0x02 }, // /
+  { 0x3E, 0x51, 0x49, 0x45, 0x3E }, // 0
+  { 0x00, 0x42, 0x7F, 0x40, 0x00 }, // 1
+  { 0x42, 0x61, 0x51, 0x49, 0x46 }, // 2
+  { 0x21, 0x41, 0x45, 0x4B, 0x31 }, // 3
+  { 0x18, 0x14, 0x12, 0x7F, 0x10 }, // 4
+  { 0x27, 0x45, 0x45, 0x45, 0x39 }, // 5
+  { 0x3C, 0x4A, 0x49, 0x49, 0x30 }, // 6
+  { 0x01, 0x71, 0x09, 0x05, 0x03 }, // 7
+  { 0x36, 0x49, 0x49, 0x49, 0x36 }, // 8
+  { 0x06, 0x49, 0x49, 0x29, 0x1E }, // 9
+  { 0x00, 0x36, 0x36, 0x00, 0x00 }, // :
+  { 0x00, 0x56, 0x36, 0x00, 0x00 }, // ;
+  { 0x00, 0x08, 0x14, 0x22, 0x41 }, // <
+  { 0x14, 0x14, 0x14, 0x14, 0x14 }, // =
+  { 0x41, 0x22, 0x14, 0x08, 0x00 }, // >
+  { 0x02, 0x01, 0x51, 0x09, 0x06 }, // ?
+  { 0x32, 0x49, 0x79, 0x41, 0x3E }, // @
+  { 0x7E, 0x11, 0x11, 0x11, 0x7E }, // A
+  { 0x7F, 0x49, 0x49, 0x49, 0x36 }, // B
+  { 0x3E, 0x41, 0x41, 0x41, 0x22 }, // C
+  { 0x7F, 0x41, 0x41, 0x22, 0x1C }, // D
+  { 0x7F, 0x49, 0x49, 0x49, 0x41 }, // E
+  { 0x7F, 0x09, 0x09, 0x01, 0x01 }, // F
+  { 0x3E, 0x41, 0x41, 0x51, 0x32 }, // G
+  { 0x7F, 0x08, 0x08, 0x08, 0x7F }, // H
+  { 0x00, 0x41, 0x7F, 0x41, 0x00 }, // I
+  { 0x20, 0x40, 0x41, 0x3F, 0x01 }, // J
+  { 0x7F, 0x08, 0x14, 0x22, 0x41 }, // K
+  { 0x7F, 0x40, 0x40, 0x40, 0x40 }, // L
+  { 0x7F, 0x02, 0x04, 0x02, 0x7F }, // M
+  { 0x7F, 0x04, 0x08, 0x10, 0x7F }, // N
+  { 0x3E, 0x41, 0x41, 0x41, 0x3E }, // O
+  { 0x7F, 0x09, 0x09, 0x09, 0x06 }, // P
+  { 0x3E, 0x41, 0x51, 0x21, 0x5E }, // Q
+  { 0x7F, 0x09, 0x19, 0x29, 0x46 }, // R
+  { 0x46, 0x49, 0x49, 0x49, 0x31 }, // S
+  { 0x01, 0x01, 0x7F, 0x01, 0x01 }, // T
+  { 0x3F, 0x40, 0x40, 0x40, 0x3F }, // U
+  { 0x1F, 0x20, 0x40, 0x20, 0x1F }, // V
+  { 0x7F, 0x20, 0x18, 0x20, 0x7F }, // W
+  { 0x63, 0x14, 0x08, 0x14, 0x63 }, // X
+  { 0x03, 0x04, 0x78, 0x04, 0x03 }, // Y
+  { 0x61, 0x51, 0x49, 0x45, 0x43 }, // Z
+  { 0x00, 0x00, 0x7F, 0x41, 0x41 }, // [
+  { 0x02, 0x04, 0x08, 0x10, 0x20 }, // "\"
+  { 0x41, 0x41, 0x7F, 0x00, 0x00 }, // ]
+  { 0x04, 0x02, 0x01, 0x02, 0x04 }, // ^
+  { 0x40, 0x40, 0x40, 0x40, 0x40 }, // _
+  { 0x00, 0x01, 0x02, 0x04, 0x00 }, // `
+  { 0x20, 0x54, 0x54, 0x54, 0x78 }, // a
+  { 0x7F, 0x48, 0x44, 0x44, 0x38 }, // b
+  { 0x38, 0x44, 0x44, 0x44, 0x20 }, // c
+  { 0x38, 0x44, 0x44, 0x48, 0x7F }, // d
+  { 0x38, 0x54, 0x54, 0x54, 0x18 }, // e
+  { 0x08, 0x7E, 0x09, 0x01, 0x02 }, // f
+  { 0x08, 0x14, 0x54, 0x54, 0x3C }, // g
+  { 0x7F, 0x08, 0x04, 0x04, 0x78 }, // h
+  { 0x00, 0x44, 0x7D, 0x40, 0x00 }, // i
+  { 0x20, 0x40, 0x44, 0x3D, 0x00 }, // j
+  { 0x00, 0x7F, 0x10, 0x28, 0x44 }, // k
+  { 0x00, 0x41, 0x7F, 0x40, 0x00 }, // l
+  { 0x7C, 0x04, 0x18, 0x04, 0x78 }, // m
+  { 0x7C, 0x08, 0x04, 0x04, 0x78 }, // n
+  { 0x38, 0x44, 0x44, 0x44, 0x38 }, // o
+  { 0x7C, 0x14, 0x14, 0x14, 0x08 }, // p
+  { 0x08, 0x14, 0x14, 0x18, 0x7C }, // q
+  { 0x7C, 0x08, 0x04, 0x04, 0x08 }, // r
+  { 0x48, 0x54, 0x54, 0x54, 0x20 }, // s
+  { 0x04, 0x3F, 0x44, 0x40, 0x20 }, // t
+  { 0x3C, 0x40, 0x40, 0x20, 0x7C }, // u
+  { 0x1C, 0x20, 0x40, 0x20, 0x1C }, // v
+  { 0x3C, 0x40, 0x30, 0x40, 0x3C }, // w
+  { 0x44, 0x28, 0x10, 0x28, 0x44 }, // x
+  { 0x0C, 0x50, 0x50, 0x50, 0x3C }, // y
+  { 0x44, 0x64, 0x54, 0x4C, 0x44 }, // z
+  { 0x00, 0x08, 0x36, 0x41, 0x00 }, // {
+  { 0x00, 0x00, 0x7F, 0x00, 0x00 }, // |
+  { 0x00, 0x41, 0x36, 0x08, 0x00 }, // }
+  { 0x08, 0x08, 0x2A, 0x1C, 0x08 }, // ->
+  { 0x08, 0x1C, 0x2A, 0x08, 0x08 }, // <-
+ };
+
 
 #define TLV_16MHz_ADDR  0x1A2E              // Address of DCO tap trim value for 16MHz
 #define TLV_24MHz_ADDR  0x1A30              // Address of DCO tap trim value for 24MHz
@@ -48,7 +148,7 @@ static const unsigned int __attribute__ ((section(".text"))) bitmap[] = {
 
 // button
 volatile int top_button = 0;
-volatile int ind = 0;
+volatile int bottom_button = 0;
 
 // SPI related vars
 char test[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE,0xFF, 0x11, 0x22};
@@ -61,25 +161,48 @@ volatile int writeCmdFlag = 0;
 // RTC
 volatile int query_rtc_flag = 0;
 char rtc_packet[] = {0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A};
+
+
+char rtc_set_packet[] = {0x01, 0x40, 0x12, 0x04, 0x04, 0x05, 0x23}; // [REG_ADDR, minutes, hours, DOW (1-7), DOM (01-31), Month/Century, Year]
+int rw = 0; // counter for rtc_set_packet
 int mode_b;
-int r = 0;
+int r = 0; // counter for rtc_packet
+char str_buf[8]; // buffer for string result
+
 int rtc_count = 0;
 
 // I2C
 int b1_i = 0;
 char bluetooth_pkt[] = {0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0xAE};
+unsigned int bluetooth_packet_cnt = 0;
 
 // Saved Data
-// { sec, min, hours, dow , data, mont/cent , year, bay_num }
+// { sec, min, hours, dow , date, mont/cent , year, bay_num }
 char data[31][7] = {{ 0,0,0,0,0,0,0 }};
+int week_data[] = {1,1,0,0,0,0,0}; // test week data
+int month_data[][7] = {{1,0,0,0,0,0,0},
+              {0,0,0,0,0,0,0},
+              {0,0,0,0,0,0,0},
+              {0,0,0,0,0,0,0}};
 int data_i = 0;
 int data_j = 0;
+int used_today = 0;
 
 int bluetooth_cmd = 0;
 
 // screensaver mode
-int screensaver = 0;
+int screensaver = 1;
 int refill_mode = 0;
+int refill_cnt = 0;
+int display_mode = 0;
+volatile int ss_cnt = 0;
+volatile int btd_cnt = 0;
+volatile int bt_cnt = 0;
+volatile int update_bluetooth = 0;
+
+// Cusor
+int curX = 0;
+int curY = 0;
 
 // TFT constants
 #define SWRESET 0x01 // software reset
@@ -121,6 +244,14 @@ char colors[] = {BLUE, RED, GREEN, LIME, CYAN, MAGENTA, YELLOW, WHITE};
 
 // delay vars
 volatile int ms_thresh, ms_count, ms_flag;
+
+
+unsigned char decToBcd(int dec) {
+    return(((dec / 10) * 16) + (dec % 10));
+}
+unsigned char bcdToDec(int bcd) {
+    return(((bcd / 16) * 10) + (bcd % 16));
+}
 
 void setClock16Mhz(){
     // Using information gathered from slaa992 and https://www.ti.com/lit/zip/slaa992
@@ -186,6 +317,21 @@ void initTimerB0compare(){
     TB0CCTL0 &= ~CCIFG;         // Clear CCR0 flag
 }
 
+/*
+ * initTimerB1compare
+ *
+ * timer for resuming screensaver
+ *
+ */
+void initTimerB1compare() {
+    TB1CTL |= TBCLR;            // Clear TB1
+    TB1CTL |= TBSSEL__SMCLK;    // Select SMCLK
+    TB1CTL |= MC__UP;           // UP mode
+    TB1CCR0 = 32768;           // Set CCR0 value (1 ms)  - 1049
+    TB1CCTL0 &= ~CCIFG;         // Clear TB1 flag
+    TB1CCTL0 |= CCIE;           // Enable TB1 interrupt
+}
+
 void initRTC_master(){
      UCB0CTLW0 |= UCSWRST;          // SW RESET ON
 
@@ -241,23 +387,26 @@ void init(){
         P3IE |= (BIT1);   // Local Interrupt enable for P3.1
         P3IFG &= ~(BIT1);     // clear P3.1 IRQ Flag
 
+        P2DIR &= ~(BIT2);                 // enable P2.2-3 as INPUT
+        P2REN |= (BIT2);                  // enable resistors
+        P2OUT |= (BIT2);                  // pull UP resistor
+        P2IES |= (BIT2);                  // H-to-L sensitivity
 
+        P4DIR &= ~BIT0;                       // enable P4.0 as INPUT
+        P4REN |= BIT0;                        // enable resistors
+        P4OUT |= BIT0;                        // pull UP resistor
+        P4IES |= BIT0;                        // H-to-L sensitivity
 
-        P2DIR &= ~BIT3;                 // enable P2.3 as INPUT
-        P2REN |= BIT3;                  // enable resistors
-        P2OUT |= BIT3;                  // pull UP resistor
-        P2IES |= BIT3;                  // H-to-L sensitivity
-
-        P1SEL1 &= ~BIT5;                // P1.5 SMCLK
+        P1SEL1 &= ~BIT5;                        // P1.5 SMCLK
         P1SEL0 |= BIT5;
 
-        P1SEL1 &= ~BIT6;                // P1.6 SOMI
+        P1SEL1 &= ~BIT6;                        // P1.6 SOMI
         P1SEL0 |= BIT6;
 
-        P1SEL1 &= ~BIT7;                // P1.7 SIMO
+        P1SEL1 &= ~BIT7;                        // P1.7 SIMO
         P1SEL0 |= BIT7;
 
-        P1SEL1 &= ~BIT4;                // STE pin setup
+        P1SEL1 &= ~BIT4;                        // STE pin setup
         P1SEL0 |= BIT4;
 
         P1DIR |= BIT0;                  // P1.0 as OUTPUT
@@ -277,16 +426,14 @@ void init(){
         UCA0CTLW0 &= ~UCSWRST;          // take eUSCI_A0 out of RESET mode
 
         // Setup IRQs
-    //    P4IE |= BIT1;                   // enable P4.1 IRQ
-    //    P4IFG &= ~BIT1;                 // clear flag
+        P2IE |= BIT2;                   // enable P2.3 IRQ
+        P2IFG &= ~BIT2;                 // clear flag
 
-        P2IE |= BIT3;                   // enable P2.3 IRQ
-        P2IFG &= ~BIT3;                 // clear flag
-
-//        UCA0IE |= UCTXIE;               // enable A0 Tx IRQ
-//        UCA0IFG &= ~UCTXIFG;            // clear flag
+        P4IE |= BIT0;                   // enable P2.3 IRQ
+        P4IFG &= ~BIT0;                 // clear flag
 
         initTimerB0compare();
+        initTimerB1compare();
 
         __enable_interrupt();           // enable global IRQ
 }
@@ -443,7 +590,8 @@ void initTFT(){
 
 void setOrientation(){
     writeCmd(MADCTL);
-    writeByte(0b11000100);
+//    writeByte(0xC0); // 180 deg
+    writeByte(0xA0); // 270 deg
 }
 
 void WriteWord (int w)
@@ -464,8 +612,20 @@ void Write565(int data, unsigned int count)
     }
 }
 
+void clearWindow(int x1, int y1){
+    SetAddrWindow(x1,y1,YMAX,XMAX);
+    writeCmd(RAMWR); // memory write
+    unsigned int i;
+    for (i=40960;i>0;--i) // byte count = 128*160*2
+     {
+        UCA0TXBUF = 0xFF;
+        while((UCA0IFG & UCTXIFG) == 0); // while buffer not empty
+
+     }
+}
+
 void clearDisplay(){
-    SetAddrWindow(0,0,XMAX,YMAX);
+    SetAddrWindow(0,0,YMAX,XMAX);
     writeCmd(RAMWR); // memory write
     unsigned int i;
     for (i=40960;i>0;--i) // byte count = 128*160*2
@@ -544,11 +704,8 @@ void fillRect(int x0, int y0, int x1, int y1, int color){
     Write565(color, w*h);
 }
 
-void fillScreen(){
-    int back_col;
-//    back_col = colors[rand() % 4];
-    back_col = 0xB277;
-    SetAddrWindow(0,0,XMAX,YMAX);
+void fillScreen(int back_col){
+    SetAddrWindow(0,0,YMAX,XMAX);
     writeCmd(RAMWR); // memory write
     unsigned int i;
     for (i=40960;i>0;--i) // byte count = 128*160*2
@@ -560,9 +717,40 @@ void fillScreen(){
      }
 }
 
+void PutCh (char ch, int x, int y, int color, int bgcolor){
+    // write ch to display X,Y coordinates using ASCII 5x7 font
+
+     int pixel;
+     int row, col, bit, dataf, mask = 0x01;
+     SetAddrWindow(x,y,x+4,y+6);
+     writeCmd(RAMWR);
+
+     for (row=0; row<7;row++){
+         for (col=0; col<5;col++){
+             dataf = FONT_CHARS[ch-32][col];
+             bit = dataf & mask;
+             if (bit==0) {
+                 pixel=bgcolor;
+             } else {
+                 pixel=color;
+             }
+             WriteWord(pixel);
+         }
+         mask <<= 1;
+     }
+}
+
+void setRTC(){
+    UCB0I2CSA = 0x0068;            // DS3231 RTC Slave address = 0x68
+    mode_b = 6;
+    UCB0CTLW0 |= UCTR;
+    UCB0TBCNT = sizeof(rtc_set_packet);
+    UCB0CTLW0 |= UCTXSTT;           // Generate START condition
+     while((UCB0IFG & UCSTPIFG)==0); // wait for STOP
+    UCB0IFG &= ~UCSTPIFG;  // clear the stop flag
+}
 
 void queryRTC(){
-
     UCB0I2CSA = 0x0068;            // DS3231 RTC Slave address = 0x68
     mode_b = 1;
     UCB0CTLW0 |= UCTR;
@@ -579,12 +767,43 @@ void queryRTC(){
     UCB0IFG &= ~UCSTPIFG;  // clear the stop flag
 }
 
-void fillDataPacket(){
-    int j;
-    for(j = 0;j<sizeof(rtc_packet);j++){
-        data[data_i][j] = rtc_packet[j];
+int sameDate(char d1[7], char d2[7]){
+    if((d1[4] == d2[4]) && (d1[5] == d2[5]) && (d1[6] == d2[6])){
+        return 1;
     }
-    data_i++;
+    return 0;
+}
+
+int dateExists(char d[7]){
+    int j,i;
+    int ret = 0;
+    if(data_i == 0){
+        return 0;
+    }
+    for(i = 0;i<sizeof(data);i++){
+        if(sameDate(data[i], d) == 1){
+            ret = i;
+        }
+    }
+    return ret;
+}
+
+void fillDataPacket(int i){
+    int j;
+
+    if(i == 0){
+        for(j = 0;j<sizeof(rtc_packet);j++){
+            data[i][j] = rtc_packet[j];
+        }
+    } else {
+//        int date_exists = dateExists(rtc_packet); // TEMP
+        int date_exists = 0;
+        if(date_exists == 0){
+            for(j = 0;j<sizeof(rtc_packet);j++){
+                data[i][j] = rtc_packet[j];
+            }
+        }
+    }
 }
 
 void fillBluetoothPacket(char pack[]){
@@ -596,7 +815,7 @@ void fillBluetoothPacket(char pack[]){
     }
 }
 
-void updateBluetooth(){
+void updateBluetoothController(){
     int i;
     for(i=0;i<data_i;i++){
         fillBluetoothPacket(data[i]);
@@ -604,6 +823,7 @@ void updateBluetooth(){
         UCB1I2CSA = 0x0058;                 // Set slave address
         mode_b = 4;
         b1_i = 0;
+        bluetooth_packet_cnt = 0;
         UCB1CTLW0 |= UCTR;
         UCB1TBCNT = sizeof(bluetooth_pkt);
         UCB1CTLW0 |= UCTXSTT;           // Generate START condition
@@ -614,14 +834,159 @@ void updateBluetooth(){
     }
 }
 
-void display_week(int r[7]){
+void updateMonthUse(){
+    int i,j;
+    int n = 1;
+    for(i=0;i<4;i++){
+        for(j=0;j<7;j++){
+            if(rtc_packet[4] == n){
+                month_data[i][j] = 1;
+            }
+            n++;
+        }
+    }
+}
+
+void updateTodayUse(){
+    // add record (if not in fill mode)
+    if(refill_mode == 0){
+        used_today = 1;
+        week_data[rtc_packet[5]-1] = 1;
+        updateMonthUse();
+        homeScreen();
+        fillDataPacket(data_i);
+        data_i++;
+    }
+
+}
+
+void display_day(){
+    //if(data[0][5] // index 5 has day of week
+    if(used_today == 1){
+        fillScreen(GREEN);
+    } else {
+        fillScreen(RED);
+    }
+}
+
+void display_norecords(){
     clearDisplay();
+    setX(2); setY(1);
+    writeString("Send Records?");
+    setX(1); setY(2);
+    writeString("(via Bluetooth)");
+
+    setX(2);
+    setY(5);
+    writeString("No Records to send.");
+}
+
+
+void set_display_mode(int disp_mode){
+    clearDisplay();
+    char dow[] = {'S','M','T','W','R','F','Y'};
+
+    if(display_mode == 0){
+        display_day();
+    } else if(display_mode == 1){
+        display_week(week_data, ((XSIZE/2)-(19/2)), dow);
+    } else if(display_mode == 2){
+        display_month(month_data);
+    } else if(display_mode == 3){
+        display_bluetooth(7);
+    } else if(display_mode == 4){
+        display_refill();
+    }
+}
+
+void setX(int x){
+    curX = x;
+}
+void setY(int y){
+    curY = y;
+}
+void advanceCursor(){
+    curX++;
+    if(curX > 25){
+        curY++;
+        curX = 0;
+    }
+    if(curY > 15){
+        curY = 0;
+    }
+}
+
+void writeString(char *str){
+    for(;*str;str++){
+        PutCh(*str,curX*6,curY*8,BLACK, WHITE);
+        advanceCursor();
+    }
+}
+
+void display_refill(){
+    setX(1);
+    setY(1);
+    writeString("Refill MODE");
+}
+
+void toggle_refill_mode(){
+    if(refill_mode == 0){
+        refill_mode = 1;
+    } else {
+        refill_mode = 0;
+    }
+}
+
+int bitmap_shown = 0;
+void update_refill_display(){
+//    clearDisplay();
+    clearWindow(0, 20);
+    display_refill();
+    if(bitmap_shown == 0){
+        drawBitmap(rand() % 95, (rand() % 50) + 20);
+        bitmap_shown = 1;
+    } else {
+        bitmap_shown = 0;
+    }
+}
+
+void display_bluetooth(int n){
+    int margin = 3;
+    int width = 19;
+    int k;
+    int y = ((XSIZE/2)-(19/2));
+    int x = 4;
+    int col;
+
+    setX(2);
+    setY(1);
+    if(update_bluetooth == 0){
+        writeString("Send Records?");
+        setX(1); setY(2);
+        writeString("(via Bluetooth)");
+
+    } else {
+        writeString("Sending Records");
+        setX(1); setY(2);
+        writeString("(via Bluetooth)");
+    }
+
+    for(k=0;k<n;k++){
+        col = BLUE;
+        fillRect(x, y, x+20, y+20, col);
+        x = x + width + margin;
+    }
+
+}
+
+
+void display_week(int r[7], int y, char dow[7]){
 
     int margin = 3;
     int width = 19;
     int k;
-    int x = (XSIZE/2)-(width/2);
-    int y = 4;
+//    int x = (XSIZE/2)-(width/2);
+    int x = 4;
     int col;
 
     for(k=0;k<7;k++){
@@ -631,9 +996,111 @@ void display_week(int r[7]){
             col = GREEN;
         }
         fillRect(x, y, x+20, y+20, col);
-        y = y + width + margin;
+        if(dow[k]<31){
+            if(dow[k]<9){
+                PutCh(intToAscii((decToBcd(dow[k]) & 0x0F)),x,y,BLACK, col);
+            } else {
+                PutCh(intToAscii((decToBcd(dow[k]) & 0xF0)>>4),x,y,BLACK, col);
+                PutCh(intToAscii((decToBcd(dow[k]) & 0x0F)),x+6,y,BLACK, col);
+            }
+        } else {
+            PutCh(dow[k],x,y,BLACK, col);
+        }
+        x = x + width + margin;
     }
+}
 
+void display_month(int mon[3][7]){
+    char dow[4][7] = {{1,2,3,4,5,6,7}, {8,9,10,11,12,13,14}, {15,16,17,18,19,20,21}, {22,23,24,25,26,27,28}};
+    int i;
+    int y = 20;
+    int cnt = 0;
+    for(i=0;i<4;i++){
+
+        display_week(mon[i], y, dow[i]);
+        y = y+24;
+    }
+}
+
+int intToAscii(int n){
+    int ret;
+    if (n > 0) {
+        ret =  n + 48;
+    } else {
+        ret = 0 + 48;
+    }
+    return ret;
+}
+
+
+void drawClock(int x, int y){
+//    int i,j;
+
+//    for(i=0;i<4;i++){
+
+//        for(j=0;j<sizeof(str);j++){
+            char *packet = data[0];
+
+            PutCh(intToAscii((packet[5] & 0xF0)>>4),x*6,y*8,BLACK, WHITE); // month (tens)
+            x++;
+            PutCh(intToAscii((packet[5] & 0x0F)),x*6,y*8,BLACK, WHITE); // month (ones)
+            x++;
+            PutCh('/',x*6,y*8,BLACK, WHITE);
+            x++;
+
+
+            PutCh(intToAscii((packet[4] & 0xF0)>>4),x*6,y*8,BLACK, WHITE); // day (tens)
+            x++;
+            PutCh(intToAscii((packet[4] & 0x0F)),x*6,y*8,BLACK, WHITE); // day (ones)
+            x++;
+            PutCh('/',x*6,y*8,BLACK, WHITE);
+            x++;
+
+            PutCh(intToAscii((packet[6] & 0xF0)>>4),x*6,y*8,BLACK, WHITE); // year (tens)
+            x++;
+            PutCh(intToAscii((packet[6] & 0x0F)),x*6,y*8,BLACK, WHITE); // year (ones)
+            x = x+2;
+
+
+            PutCh(intToAscii((packet[2] & 0xF0)>>4),x*6,y*8,BLACK, WHITE); // hours (tens)
+            x++;
+            PutCh(intToAscii((packet[2] & 0x0F)),x*6,y*8,BLACK, WHITE); // hours (ones)
+            x++;
+            PutCh(':',x*6,y*8,BLACK, WHITE);
+            x++;
+
+            int t1 = intToAscii((packet[1] & 0b11110000) >> 4);
+            PutCh(t1,x*6,y*8,BLACK, WHITE); // minutes (tens)
+            x++;
+            int t2 = intToAscii((packet[1] & 0x0F));
+            PutCh(t2,x*6,y*8,BLACK, WHITE); // minutes (ones)
+            x = x+2;
+
+            PutCh(intToAscii((packet[0] & 0xF0)>>4),x*6,y*8,BLACK, WHITE); // seconds (tens)
+            x++;
+            PutCh(intToAscii((packet[0] & 0x0F)),x*6,y*8,BLACK, WHITE); // seconds (ones)
+
+//        }
+//    }
+}
+
+void bluetoothSendState(int state){
+    if(state == 0){
+        bluetooth_pkt[7] = 0x00;
+    } else if(state == 1){
+        bluetooth_pkt[7] = 0xAE;
+    }
+    // begin I2C transmission
+    updateBluetoothController();
+}
+
+void homeScreen(){
+    clearDisplay();
+    display_mode = 0;
+    set_display_mode(0);
+    screensaver = 0;
+    TB1CTL |= TBCLR; // clear screensaver clock
+    ss_cnt = 0;
 }
 
 int main(void)
@@ -646,21 +1113,21 @@ int main(void)
 
     // init & query RTC
     initRTC_master();
+
+    setRTC();
+
     queryRTC();
+    fillDataPacket(0);
 
     // init TFT
     initTFT();
     setOrientation();
     clearDisplay();
 
-//    delay_ms(100);
-//    PixelTest();
-//    int x = rand() % XMAX; // random x coordinate
-//    int y = rand() % YMAX; // random y coordinate
-//    DrawPixel(x,y,BLACK); // draw pixel at x,y
+    drawClock(3, 13);
 
-    int v = 10;
-    int t = 0;
+    static const int v = 10;
+    static const int t = 0;
     int back_col;
 
 
@@ -679,85 +1146,119 @@ int main(void)
     char c[] = {BLUE, LIME, GREEN, WHITE};
     int col;
 
-    drawBitmap(20,60);
-//    fillScreen();
-//    fillRect(40, 40, 68, 68, 0xCA27);
+    //homeScreen();
 
-    int m[] = {1,1,0,0,1,1,1}; // test week data
-
+    int i;
     while(1){
 
+        delay_ms(500);
 //        SPI_send(test, sizeof(test));
 //        delay_ms(5);
         P6OUT ^= BIT0;
 
         // RTC
-//        if(rtc_count == 2){
-        if(query_rtc_flag == 1){
+        if(rtc_count == 25){
+//        if(query_rtc_flag == 1){
             queryRTC(); // query RTC
-
-            if(refill_mode == 0){
-                fillDataPacket();
-            }
+            fillDataPacket(0); // update current date
 
             query_rtc_flag = 0;
             rtc_count = 0;
         }
-//        rtc_count++;
+        rtc_count++;
 
-        // look for button press
-        if(top_button == 1){
-            switch(ind){
-                case 0: col = RED; break;
-                case 1: col = WHITE; break;
-                case 3: col = BLUE; break;
-                case 4: col = YELLOW; break;
-                case 5: col = RED; ind = 0; break;
+        // TOP BUTTON action
+
+            if(display_mode == 4){
+                if(top_button == 1){
+                    clearDisplay();
+                    display_bluetooth(btd_cnt);
+
+                    // update state
+                    if(data_i>0){
+                        if(update_bluetooth == 0){
+                            update_bluetooth = 1;
+                            bluetoothSendState(1); // stop
+                        }
+//                        else {
+//                            update_bluetooth = 0;
+//                            bluetoothSendState(1); // start
+//                        }
+                    } else {
+                        display_norecords();
+                    }
+
+                    top_button = 0;
+                    delay_ms(300);
+                    P4IE |= BIT0;        // enable P2.3 IRQ
+                    P4IFG &= ~BIT0;      // clear flag
+                }
+            } else if(display_mode == 5){
+                if(top_button == 1){
+                    refill_cnt = 0;
+                    toggle_refill_mode();
+
+                    top_button = 0;
+                    delay_ms(300);
+                    P4IE |= BIT0;        // enable P2.3 IRQ
+                    P4IFG &= ~BIT0;      // clear flag
+                }
             }
-            col = BLUE;
-            ind++;
 
-            // set refill mode
-            if(refill_mode == 0){
-//                fillRect(0, 0, XSIZE/2, YSIZE/2, col);
+            /*
+            if(display_mode == 5){
 
-                display_week(m);
-                refill_mode = 1;
-                screensaver = 0;
-                bluetooth_pkt[7] = 0;
-            } else {
-                clearDisplay();
-                refill_mode = 0;
-                screensaver = 1;
-                bluetooth_pkt[7] = 0xAE;
+                // set refill mode
+                if(refill_mode == 0){
+                    refill_mode = 1;
+                    screensaver = 0;
+                } else {
+                    clearDisplay();
+                    refill_mode = 0;
+                    screensaver = 1;
+                }
+            }
+            */
+
+
+
+        // BOTTOM BUTTON action
+        if(bottom_button == 1){
+            refill_mode = 0; // unset refill mode
+
+            if(update_bluetooth == 1){
+                update_bluetooth = 0; // turn off bluetooth animation
+                bluetoothSendState(0);
             }
 
-            // begin I2C transmission
-            updateBluetooth();
 
-//            fillScreen();
-            top_button = 0;
-            delay_ms(600);
-            P2IE |= BIT3;        // enable P2.3 IRQ
-            P2IFG &= ~BIT3;                 // clear flag
+            TB1CTL |= TBCLR; // clear screensaver clock
+            ss_cnt = 0;
+
+            screensaver = 0;
+            if(display_mode >= 5){
+                display_mode = 0;
+            }
+            set_display_mode(display_mode);
+            display_mode++;
+
+            bottom_button = 0;
+            delay_ms(300);
+            P2IE |= BIT2;        // enable P2.3 IRQ
+            P2IFG &= ~BIT2;                 // clear flag
         }
 
         if(screensaver == 1){
             // random flower bitmaps
-            clearDisplay();
-            drawBitmap(rand() % 100,rand() % 100);
-            delay_ms(1000);
+
+            //drawBitmap(rand() % 150,rand() % 50);
+            if(rtc_count == 25){
+                clearDisplay();
+                drawClock(3, 13);
+            }
+
         }
 
-        // random fade
-//        t++;
-//        if(t> 200){
-//            back_col = colors[rand() % 7];
-//        }
-//
-//        int x = rand() % 128; // random x coordinate
-//        int y = rand() % 170; // random y coordinate
-//        DrawPixel(x,y, back_col); // draw pixel at x,y
 
     }
 
@@ -766,15 +1267,24 @@ int main(void)
 // -----------------------------------/
 // ISRs ------------------------------/
 
+
 /*
  * Top Button Interrupt (P2.3)
  */
+#pragma vector = PORT4_VECTOR
+__interrupt void ISR_PORT2_S4(void){
+    top_button = 1;
+    screensaver = 0;
+    P4IE &= ~BIT0;                   // disable P2.3 IRQ
+}
+
+/*
+ * Bottom Button Interrupt (P2.2)
+ */
 #pragma vector = PORT2_VECTOR
 __interrupt void ISR_PORT2_S2(void){
-
-    top_button = 1;
-    P2IE &= ~BIT3;                   // disable P2.3 IRQ
-//    P2IFG &= ~BIT3;                 // clear flag
+    bottom_button = 1;
+    P2IE &= ~BIT2;                   // disable P2.2 IRQ
 }
 
 /*
@@ -790,6 +1300,40 @@ __interrupt void ISR_TB0_CCR0(void){
 
     TB0CCTL0 &= ~CCIFG;
 }
+
+#pragma vector = TIMER1_B0_VECTOR
+__interrupt void ISR_TB1_CCR0(void) {
+    if(update_bluetooth == 1){
+        bt_cnt++;
+        if(bt_cnt == 150){
+            btd_cnt++;
+            bt_cnt = 0;
+            if(btd_cnt == 8){
+                btd_cnt = 0;
+                update_bluetooth = 0;
+                screensaver = 1;
+                display_mode = 0;
+            }
+            display_bluetooth(btd_cnt);
+        }
+    } else if(refill_mode == 1){
+        refill_cnt++;
+        if(refill_cnt == 250){
+            refill_cnt = 0;
+            update_refill_display();
+        }
+    } else {
+        if(ss_cnt >= 2000){
+            ss_cnt = 0;
+            screensaver = 1;
+        }
+        ss_cnt++;
+    }
+
+
+    TB1CCTL0 &= ~CCIFG;     // Clear flag
+}
+
 
 
 /*
@@ -812,7 +1356,17 @@ __interrupt void EUSCI_B0_TX_ISR(void){
         case 0x18:      // ID 18: TXIFG0
             // rtc pointer set
             if(mode_b == 1){
-                UCB0TXBUF = 0x00;
+                UCB0TXBUF = 0x00; // set RTC pointer (for reading)
+            } else if(mode_b == 5){
+                UCB0TXBUF = 0x01; // set RTC pointer to minutes address (for writing)
+            } else if(mode_b == 6){
+                if (rw == (sizeof(rtc_set_packet)-1)){
+                    UCB0TXBUF = rtc_set_packet[rw];
+                    rw = 0;
+                } else {
+                    UCB0TXBUF = rtc_set_packet[rw];
+                    rw++;
+                }
             }
 
             break;
@@ -829,6 +1383,7 @@ __interrupt void EUSCI_B0_TX_ISR(void){
 #pragma vector = PORT3_VECTOR
 __interrupt void ISR_PORT3_S1(void){
     query_rtc_flag = 1;
+    updateTodayUse();
     P3IFG &= ~BIT1;                 // clear flag
 }
 
